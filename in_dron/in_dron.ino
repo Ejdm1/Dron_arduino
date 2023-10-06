@@ -1,6 +1,7 @@
 #define pinTrigger    41
 #define pinEcho       43
 #define maxVzdalenost 400
+
 int vzdalenost = 10000;
 unsigned long posl = 0;
 unsigned long predProg = 0;
@@ -58,7 +59,8 @@ const byte address[6] = "00001";
 
 Servo motor;
 
-void setup() {
+void setup() 
+{
   // put your setup code here, to run once:
   pinMode(bzucPin1, OUTPUT);
   pinMode(senzorTlac1, INPUT);
@@ -72,8 +74,10 @@ void setup() {
   // Serial1.begin(152000);
   // Serial1.print("AT+ADDRES=0");
   // Serial1.flush();
-  while(pomSetup == true){
-    if(digitalRead(senzorTlac1) == LOW){
+  while(pomSetup == true)
+  {
+    if(digitalRead(senzorTlac1) == LOW)
+    {
       digitalWrite(bzucPin1, LOW);
       delay(1000);
       digitalWrite(bzucPin1, HIGH);
@@ -89,7 +93,8 @@ void setup() {
       // Setup the registers of the MPU-6050 and start up
       setup_mpu_6050_registers();
       Serial.println("Calibrating gyro, place on level surface and do not move.");
-      for (int cal_int = 0; cal_int < 3000; cal_int ++){
+      for (int cal_int = 0; cal_int < 3000; cal_int ++)
+      {
         if(cal_int % 200 == 0)Serial.print(".");
           read_mpu_6050_data();
           gyro_x_cal += gyro_x;
@@ -110,13 +115,16 @@ void setup() {
   }
 }
 
-void loop() {
-  Serial.println("tady");
+void loop() 
+{
+  Serial.println("main started");
   // put your main code here, to run repeatedly:
-  while(true){
+  while(true)
+  {
     predProg = millis();
 
-    while(pomProg == true){
+    while(pomProg == true)
+    {
       loopTimer = micros();
       loopTimer2 = micros();
       freq = 1/((micros() - loopTimer2) * 1e-6);
@@ -141,26 +149,41 @@ void loop() {
       gyroRoll -= rotation_y*dt;
       gyroYaw += rotation_z*dt;
 
-      if (radio.available()>0){
-          char text[32] = "";
-          radio.read(&text, sizeof(text));
-          String veta = String(text);
-          int mod = (veta.substring(0,1)).toInt();
-          int arm = (veta.substring(veta.indexOf("a")+1,veta.indexOf("a") + 2)).toInt();
-          int servoX = (veta.substring(veta.indexOf("o")+1,veta.indexOf(","))).toInt();
-          int servoY = (veta.substring(veta.indexOf(",")+1,veta.indexOf("x"))).toInt();
-          int naklonX = (veta.substring(veta.indexOf("x") + 1,veta.indexOf("y"))).toInt();
-          int naklonY = (veta.substring(veta.indexOf("y")+1,veta.indexOf("s"))).toInt();
-          int smerovka = (veta.substring(veta.indexOf("s")+1,veta.indexOf("p"))).toInt();
-          int plyn = (veta.substring(veta.indexOf("p") + 1,veta.length())).toInt();
-          Serial.println(plyn);
-          motor.write(plyn);
-        }
-        else{
-          Serial.println("nothing yet");
-        }
+      if (radio.available()>0)
+      {
+        //char text[32] = "";
+        data[8];
+        radio.read(&data, data.length());
+        //radio.read(&text, sizeof(text));
 
-        // if (millis() > posl + inter){
+        // String veta = String(text);
+        // int arm = (veta.substring(veta.indexOf("a")+1,veta.indexOf("a") + 2)).toInt();
+        // int servoX = (veta.substring(veta.indexOf("o")+1,veta.indexOf(","))).toInt();
+        // int servoY = (veta.substring(veta.indexOf(",")+1,veta.indexOf("x"))).toInt();
+        // int naklonX = (veta.substring(veta.indexOf("x") + 1,veta.indexOf("y"))).toInt();
+        // int naklonY = (veta.substring(veta.indexOf("y")+1,veta.indexOf("s"))).toInt();
+        // int smerovka = (veta.substring(veta.indexOf("s")+1,veta.indexOf("p"))).toInt();
+        // int plyn = (veta.substring(veta.indexOf("p") + 1,veta.length())).toInt();
+        if(data[0] == 255 && data[7] == 254)
+        {
+          int plyn = data[1];
+          int servo1 = data[2];
+          int servo2 = data[3];
+          int servo3 = data[4];
+          int servo4 = data[5];
+          bool armed = data[6];
+
+          Serial.println(plyn);
+          //motor.write(plyn);
+        }
+      }
+      else
+      {
+        Serial.println("nothing yet");
+      }
+
+        // if (millis() > posl + inter)
+        // {
         //   radio2.print("AT");
         //   Serial.println("pppppppppoossssssllll");
         //   posl = millis();
@@ -170,7 +193,8 @@ void loop() {
         // }
 
       rozdil = behemProg - predProg;
-      if ((rozdil %= 50) < 8 && (millis() - jedS) > 40){                  
+      if ((rozdil %= 50) < 8 && (millis() - jedS) > 40)
+      {                  
         vzdalenost = sonar.ping_cm();
         // Serial.print(pitch);
         // Serial.print(",");
@@ -193,10 +217,10 @@ void loop() {
       behemProg = millis();
     }
   }
-
 }
 
-void read_mpu_6050_data() {
+void read_mpu_6050_data() 
+{
   Wire.beginTransmission(0x68);
   Wire.write(0x3B);
   Wire.endTransmission();
@@ -211,8 +235,8 @@ void read_mpu_6050_data() {
   gyro_z = Wire.read()<<8 | Wire.read();
 }
 
-
-void setup_mpu_6050_registers() {
+void setup_mpu_6050_registers() 
+{
   Wire.beginTransmission(0x68);
   Wire.write(0x6B);
   Wire.write(0x00);

@@ -35,7 +35,7 @@ LiquidCrystal_I2C lcd(0x27,20,4);
 int allData[7];
 int newData;
 int count = 0;
-dataToTransmit[9];
+dataToTransmit[8];
 
 void setup() 
 {
@@ -99,9 +99,8 @@ void loop()
     dataToTransmit[3] = 
     dataToTransmit[4] = 
     dataToTransmit[5] = 
-    dataToTransmit[6] = allData[4];
-    dataToTransmit[7] = allData[5];
-    dataToTransmit[8] = 254;
+    dataToTransmit[6] = allData[5];
+    dataToTransmit[7] = 254;
   }
   if(allData[6] == 253) // 253 = track
   {
@@ -111,9 +110,8 @@ void loop()
     dataToTransmit[3] = allData[1]; //s2
     dataToTransmit[4] = allData[2]; //s3
     dataToTransmit[5] = allData[3]; //s4
-    dataToTransmit[6] = allData[4]; //auto guided or just track
-    dataToTransmit[7] = allData[5]; //armed/disarmed
-    dataToTransmit[8] = 254;
+    dataToTransmit[6] = allData[5]; //armed/disarmed
+    dataToTransmit[7] = 254;
   }
  
   radio.write(&dataToTransmit, sizeof(dataToTransmit));
