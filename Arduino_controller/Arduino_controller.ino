@@ -22,20 +22,21 @@
 
 RF24 radio(7, 8); // CE, CSN
 const byte address[6] = "00001";
-String cele;
 int plyn;
 int naklonX;
 int naklonY;
 int smerovkaX;
 
-#include <LiquidCrystal_I2C.h>
+long loopTimer;
 
-LiquidCrystal_I2C lcd(0x27,20,4);
+// #include <LiquidCrystal_I2C.h>
+
+// LiquidCrystal_I2C lcd(0x27,20,4);
 
 int allData[7];
 int newData;
 int count = 0;
-dataToTransmit[8];
+int dataToTransmit[8];
 
 void setup() 
 {
@@ -47,13 +48,13 @@ void setup()
   radio.setDataRate(RF24_250KBPS);
   radio.stopListening();
 
-  lcd.init();
-  lcd.backlight();
+  // lcd.init();
+  // lcd.backlight();
 }
 
 void loop() 
 {
-  lcd.clear();
+  loopTimer = micros();
   if(Serial.available() > 0)
   {      
     newData = Serial.read();
@@ -65,11 +66,6 @@ void loop()
         if(newData != 255 && newData != 254)
         {
           allData[count] = newData;
-
-          lcd.clear();
-          lcd.print(String(allData[count]));
-          delay(500);
-
           count++;
         }
         if(newData == 254)
@@ -82,26 +78,26 @@ void loop()
   count = 0;
 
   plyn = map(analogRead(A0),0,1023,13,180);
-  naklonX = map(analogRead(A3),0,1023,0,1000);
-  naklonY = map(analogRead(A2),0,1023,0,1000);
-  smerovkaX = map(analogRead(A1),0,1023,0,1000);
+  naklonX = map(analogRead(A3),0,1023,0,180);
+  naklonY = map(analogRead(A2),0,1023,0,180);
+  smerovkaX = map(analogRead(A1),0,1023,0,180);
 
   // naklonX = prevod(naklonX);
   // naklonY = prevod(naklonY);
   // smerovkaX = prevod(smerovkaX);
 
 
-  if(allData[6] == 252) //252 = manual
-  {
-    dataToTransmit[0] = 255;
-    dataToTransmit[1] = plyn;
-    dataToTransmit[2] = 
-    dataToTransmit[3] = 
-    dataToTransmit[4] = 
-    dataToTransmit[5] = 
-    dataToTransmit[6] = allData[5];
-    dataToTransmit[7] = 254;
-  }
+  // if(allData[6] == 252) //252 = manual
+  // {
+  //   dataToTransmit[0] = 255;
+  //   dataToTransmit[1] = plyn;
+  //   dataToTransmit[2] = 
+  //   dataToTransmit[3] = 
+  //   dataToTransmit[4] = 
+  //   dataToTransmit[5] = 
+  //   dataToTransmit[6] = allData[5];
+  //   dataToTransmit[7] = 254;
+  // }
   if(allData[6] == 253) // 253 = track
   {
     dataToTransmit[0] = 255;
@@ -112,7 +108,16 @@ void loop()
     dataToTransmit[5] = allData[3]; //s4
     dataToTransmit[6] = allData[5]; //armed/disarmed
     dataToTransmit[7] = 254;
+    // for(int i = 0; i < 8; i++)
+    // {
+    //   lcd.clear();
+    //   lcd.print(String(dataToTransmit[i]));
+    //   delay(1000);
+    // }
   }
  
   radio.write(&dataToTransmit, sizeof(dataToTransmit));
+
+  while (micros() - loopTimer <= 4000);
+  loopTimer = micros();
 }

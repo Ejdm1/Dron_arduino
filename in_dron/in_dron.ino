@@ -35,6 +35,8 @@ long scaleFactorGyro = 65.5;
 // 2g --> 16384 , 4g --> 8192 , 8g --> 4096, 16g --> 2048
 long scaleFactorAccel = 8192;
 
+int plyn = 0;
+
 const byte rxPin = 31;
 const byte txPin = 30;
 
@@ -56,6 +58,8 @@ NewPing sonar(pinTrigger, pinEcho, maxVzdalenost);
 
 RF24 radio(7, 8); // CE, CSN
 const byte address[6] = "00001";
+
+int data[8];
 
 Servo motor;
 
@@ -152,8 +156,8 @@ void loop()
       if (radio.available()>0)
       {
         //char text[32] = "";
-        data[8];
-        radio.read(&data, data.length());
+        radio.read(&data, sizeof(data));
+        // radio.flush_rx();
         //radio.read(&text, sizeof(text));
 
         // String veta = String(text);
@@ -166,16 +170,23 @@ void loop()
         // int plyn = (veta.substring(veta.indexOf("p") + 1,veta.length())).toInt();
         if(data[0] == 255 && data[7] == 254)
         {
-          int plyn = data[1];
+          plyn = data[1];
           int servo1 = data[2];
           int servo2 = data[3];
           int servo3 = data[4];
           int servo4 = data[5];
           bool armed = data[6];
-
-          Serial.println(plyn);
-          //motor.write(plyn);
         }
+
+        String toPrint = "";
+        for(int i = 0;i < 8;i++)
+        {
+          toPrint = toPrint + String(data[i]) + " ";
+        }
+        Serial.println(toPrint);
+
+        //Serial.println(plyn);
+        motor.write(0);
       }
       else
       {
@@ -194,13 +205,13 @@ void loop()
 
       rozdil = behemProg - predProg;
       if ((rozdil %= 50) < 8 && (millis() - jedS) > 40)
-      {                  
+      {
         vzdalenost = sonar.ping_cm();
         // Serial.print(pitch);
         // Serial.print(",");
         // Serial.print(roll);
         // Serial.print("  ");
-        Serial.println(vzdalenost);
+        //------------------------------Serial.println(vzdalenost);
         // Serial.println();
         // if(Serial1.available()){
         //   prichozi = Serial1.readString();
