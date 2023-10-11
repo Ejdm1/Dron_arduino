@@ -29,6 +29,9 @@ int smerovkaX;
 
 long loopTimer;
 
+unsigned long startMill = 0;
+unsigned long endMill = 0;
+
 // #include <LiquidCrystal_I2C.h>
 
 // LiquidCrystal_I2C lcd(0x27,20,4);
@@ -54,6 +57,7 @@ void setup()
 
 void loop() 
 {
+  startMill = millis();
   loopTimer = micros();
   if(Serial.available() > 0)
   {      
@@ -87,17 +91,18 @@ void loop()
   // smerovkaX = prevod(smerovkaX);
 
 
-  // if(allData[6] == 252) //252 = manual
-  // {
-  //   dataToTransmit[0] = 255;
-  //   dataToTransmit[1] = plyn;
-  //   dataToTransmit[2] = 
-  //   dataToTransmit[3] = 
-  //   dataToTransmit[4] = 
-  //   dataToTransmit[5] = 
-  //   dataToTransmit[6] = allData[5];
-  //   dataToTransmit[7] = 254;
-  // }
+  if(allData[6] == 252) //252 = manual
+  {
+    dataToTransmit[0] = 255;
+    dataToTransmit[1] = plyn;
+    dataToTransmit[2] = 1;
+    dataToTransmit[3] = 2;
+    dataToTransmit[4] = 3;
+    dataToTransmit[5] = 4;
+    dataToTransmit[6] = allData[5];
+    dataToTransmit[7] = 254;
+  }
+
   if(allData[6] == 253) // 253 = track
   {
     dataToTransmit[0] = 255;
@@ -115,9 +120,12 @@ void loop()
     //   delay(1000);
     // }
   }
+  if(endMill - startMill >= 5)
+  {
+    radio.write(&dataToTransmit, sizeof(dataToTransmit));
+  }
  
-  radio.write(&dataToTransmit, sizeof(dataToTransmit));
-
   while (micros() - loopTimer <= 4000);
   loopTimer = micros();
+  endMill = millis();
 }

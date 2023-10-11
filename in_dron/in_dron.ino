@@ -2,6 +2,9 @@
 #define pinEcho       43
 #define maxVzdalenost 400
 
+unsigned long startMill = 0;
+unsigned long endMill = 0;
+
 int vzdalenost = 10000;
 unsigned long posl = 0;
 unsigned long predProg = 0;
@@ -153,10 +156,17 @@ void loop()
       gyroRoll -= rotation_y*dt;
       gyroYaw += rotation_z*dt;
 
-      if (radio.available()>0)
+      if(radio.available() > 0)
       {
+        startMill = millis();
+        if(endMill - startMill >= 10)
+        {
+          radio.read(&data, sizeof(data));
+          Serial.println("data recieved");
+        }
+
         //char text[32] = "";
-        radio.read(&data, sizeof(data));
+
         // radio.flush_rx();
         //radio.read(&text, sizeof(text));
 
@@ -183,25 +193,28 @@ void loop()
         {
           toPrint = toPrint + String(data[i]) + " ";
         }
-        Serial.println(toPrint);
+        Serial.print(toPrint);
 
         //Serial.println(plyn);
+        motor.write(plyn);
+      }
+      else if (Serial.available() == 0) 
+      {
+        Serial.print("Buffer is empty");
         motor.write(0);
       }
       else
       {
-        Serial.println("nothing yet");
+        Serial.println("nothing yet " + String(Serial.available()));
+        motor.write(0);
       }
 
-        // if (millis() > posl + inter)
-        // {
-        //   radio2.print("AT");
-        //   Serial.println("pppppppppoossssssllll");
-        //   posl = millis();
-        // }
-        // if (radio2.available()){
-        //   Serial.println(radio2.readString());
-        // }
+        if (millis() > posl + inter)
+        {
+          Serial2.println("AT+SEND=1,3,sus");
+          Serial.println("pppppppppoossssssllll");
+          posl = millis();
+        }
 
       rozdil = behemProg - predProg;
       if ((rozdil %= 50) < 8 && (millis() - jedS) > 40)
@@ -217,7 +230,7 @@ void loop()
         //   prichozi = Serial1.readString();
         //   Serial.print(prichozi);
         // }
-        // Serial1.flush();
+        // Serial1.flush(); 
 
         jedS = millis();
       }
@@ -226,6 +239,7 @@ void loop()
       while (micros() - loopTimer <= 4000);
       loopTimer = micros();
       behemProg = millis();
+      endMill = millis();
     }
   }
 }
